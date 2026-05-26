@@ -102,7 +102,7 @@ with center:
             )
 
             st.switch_page(
-                "pages/login.py"
+                "auth/login.py"
             )
 
         else:
@@ -123,5 +123,5 @@ with center:
     ):
 
         st.switch_page(
-            "pages/login.py"
+            "auth/login.py"
         )

@@ -3,31 +3,29 @@ import streamlit as st
 
 def render_navbar():
 
-    st.sidebar.title("TamTrack")
+    col1, col2 = st.columns([8, 1])
 
-    if "username" in st.session_state:
+    with col1:
+        st.title("🎓 TamTrack")
 
-        st.sidebar.success(
-            f"👤 {st.session_state['username']}"
-        )
+    with col2:
 
-    st.sidebar.page_link(
-        "pages/recommendations.py",
-        label="🏠 Home"
-    )
+        with st.popover("👤"):
 
-    st.sidebar.page_link(
-        "pages/search.py",
-        label="🔍 Search"
-    )
+            if st.button("Profile"):
 
-    st.sidebar.page_link(
-        "pages/bookmarks.py",
-        label="⭐ Bookmarks"
-    )
+                st.session_state.page = "profile"
+                st.rerun()
 
-    if st.sidebar.button("Logout"):
+            if st.button("Bookmarks"):
 
-        st.session_state.clear()
+                st.session_state.page = "bookmarks"
+                st.rerun()
 
-        st.switch_page("pages/login.py")
+            if st.button("Logout"):
+
+                st.session_state.clear()
+
+                st.session_state.page = "login"
+
+                st.rerun()

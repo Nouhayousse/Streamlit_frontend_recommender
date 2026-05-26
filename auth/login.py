@@ -8,7 +8,7 @@ BASE_URL = "http://127.0.0.1:8000/api"
 # ====================================
 
 st.set_page_config(
-    page_title="Register - TamTrack",
+    page_title="Login - TamTrack",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -50,25 +50,21 @@ left, center, right = st.columns([1,2,1])
 with center:
 
     st.markdown(
-        "<div class='main-title'>📝 Create Account</div>",
+        "<div class='main-title'>🎓 TamTrack</div>",
         unsafe_allow_html=True
     )
 
     st.markdown(
-        "<div class='subtitle'>Join TamTrack today</div>",
+        "<div class='subtitle'>Discover the best seminars worldwide</div>",
         unsafe_allow_html=True
     )
 
     # ====================================
-    # REGISTER FORM
+    # LOGIN FORM
     # ====================================
 
     username = st.text_input(
         "Username"
-    )
-
-    email = st.text_input(
-        "Email"
     )
 
     password = st.text_input(
@@ -77,51 +73,54 @@ with center:
     )
 
     # ====================================
-    # REGISTER BUTTON
+    # LOGIN BUTTON
     # ====================================
 
     if st.button(
-        "Create Account",
+        "Login",
         use_container_width=True,
         type="primary"
     ):
 
         response = requests.post(
-            f"{BASE_URL}/users/register/",
+            f"{BASE_URL}/token/",
             json={
                 "username": username,
-                "email": email,
                 "password": password
             }
         )
 
-        if response.status_code == 201:
+        if response.status_code == 200:
 
-            st.success(
-                "Account created successfully"
-            )
+            data = response.json()
+
+            st.session_state["access"] = data["access"]
+
+            st.session_state["refresh"] = data["refresh"]
+
+            st.success("Login successful")
 
             st.switch_page(
-                "pages/login.py"
+                "pages/home.py"
             )
 
         else:
 
             st.error(
-                response.json()
+                "Invalid username or password"
             )
 
     st.divider()
 
     st.write(
-        "Already have an account?"
+        "Don't have an account?"
     )
 
     if st.button(
-        "Back to Login",
+        "Create Account",
         use_container_width=True
     ):
 
         st.switch_page(
-            "pages/login.py"
+            "auth/register.py"
         )
