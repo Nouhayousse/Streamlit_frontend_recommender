@@ -93,6 +93,7 @@ with center:
         if response.status_code == 200:
 
             data = response.json()
+            st.session_state["username"] = username
 
             st.session_state["access"] = data["access"]
 

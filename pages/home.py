@@ -65,34 +65,9 @@ if "search_results" not in st.session_state:
 # NAVBAR
 # =====================================
 
-render_navbar()
+query, category, source, search_clicked, menu_action = render_navbar()
 
-
-st.title("🏠 Seminars")
-
-col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
-
-with col1:
-    query = st.text_input("Search seminars")
-
-with col2:
-    category = st.selectbox(
-        "Category",
-        ["", "technology","career-business","education-science","sports-fitness","arts-culture","writing","spirituality","health","hobbies-passions","community","science-and-tech","charity-and-causes"]
-    )
-
-with col3:
-    source = st.selectbox(
-        "Source",
-        ["", "meetup", "eventbrite", "other"]
-    )
-
-with col4:
-    search_btn = st.button("🔍")
-
-
-
-if search_btn:
+if search_clicked:
 
     response = search_seminars(
         q=query,
@@ -101,14 +76,63 @@ if search_btn:
     )
 
     st.session_state.search_results = response.get("results", [])
-    st.session_state.search_mode = True    
+    st.session_state.search_mode = True
+
+
+
+
+if menu_action == "bookmarks":
+    st.switch_page("pages/bookmarks.py")
+
+elif menu_action == "profile":
+    st.switch_page("pages/profile.py")
+
+elif menu_action == "logout":
+    st.session_state.clear()
+    st.switch_page("pages/login.py")
+   
+#st.title("🏠 Seminars")
+
+#col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+
+# with col1:
+#     query = st.text_input("Search seminars")
+
+# with col2:
+#     category = st.selectbox(
+#         "Category",
+#         ["", "technology","career-business","education-science","sports-fitness","arts-culture","writing","spirituality","health","hobbies-passions","community","science-and-tech","charity-and-causes"]
+#     )
+
+# with col3:
+#     source = st.selectbox(
+#         "Source",
+#         ["", "meetup", "eventbrite", "other"]
+#     )
+
+# with col4:
+#     search_btn = st.button("🔍")
+
+
+
+# if search_btn:
+
+#     response = search_seminars(
+#         q=query,
+#         category=category,
+#         source=source
+#     )
+
+#     st.session_state.search_results = response.get("results", [])
+#     st.session_state.search_mode = True    
 
 
 
 
 if st.session_state.search_mode:
 
-    st.subheader("🔍 Search Results")
+    st.markdown("## 🔍 Search Results")
+    st.caption("Filter your seminars by keywords, category and source")
 
     if st.button("⬅ Back to Home"):
 
@@ -130,13 +154,13 @@ if st.session_state.search_mode:
 # PAGE TITLE
 # =====================================
 
-st.title("🔥 Recommended For You")
+#st.title("🔥 Recommended For You")
 
 # =====================================
 # RECOMMENDATIONS
 # =====================================
 
-recommendations = get_recommendations()
+#recommendations = get_recommendations()
 
 # results = recommendations.get(
 #     "results",
@@ -173,20 +197,26 @@ results = recommendations.get(
     "results",
     []
 )
+st.subheader("🔥 Recommended For You")
 
-for idx, seminar in enumerate(results[:20]):
+#st.markdown('<div class="scroll-wrapper">', unsafe_allow_html=True)
+st.markdown('<div class="hscroll">', unsafe_allow_html=True)
 
-    render_seminar_card(
-        seminar,
-        idx,
-        "recommendations"
-    )
 
-# =====================================
+for idx, seminar in enumerate(results[:10]):
+
+        render_seminar_card(seminar, idx, "rec")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+    
+
+
 # BROWSE ALL
 # =====================================
 
-st.title("🌍 Browse All")
+st.subheader("🌍 Browse All Seminars")
 
 response = get_all_seminars(st.session_state.page_all)
 
@@ -199,22 +229,37 @@ st.session_state.all_seminars = merge_unique(
 
 next_page = response.get("next")
 
-
-
-
+# GRID 3 columns
+cols = st.columns(3, gap="medium")
 
 for idx, seminar in enumerate(st.session_state.all_seminars):
-   
-    render_seminar_card(seminar, idx,"browse_all")
 
-if next_page :
+    with cols[idx % 3]:
 
-    if st.button("Load More"):
+        render_seminar_card(
+            seminar,
+            idx,
+            "browse_all"
+        )
+
+
+
+
+
+
+if next_page:
+
+    if st.button("⬇ Load More", use_container_width=True):
 
         st.session_state.page_all += 1
         st.rerun()
 
 
 
-       
-        
+     
+
+
+
+from components.footer import render_footer
+
+render_footer()        

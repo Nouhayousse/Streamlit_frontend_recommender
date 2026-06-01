@@ -1,98 +1,63 @@
 import streamlit as st
-import requests
-import webbrowser
-
 from services.api import auth_post
 
-BASE_URL = "http://127.0.0.1:8000/api"
+def _init():
+    if "bookmarked" not in st.session_state:
+        st.session_state.bookmarked = set()
 
 
-def render_seminar_card(seminar, idx,section):
+def render_seminar_card(seminar, idx, section):
 
-    image = seminar.get("image")
+    _init()
 
-    st.image(
-        image,
-        use_container_width=True
-    )
+    sid = seminar.get("id", idx)
+    title = seminar.get("title", "Untitled Seminar")
+    category = seminar.get("category", "")
+    date = str(seminar.get("start_date", ""))[:10]
+    image = seminar.get("image") or ""
+    url = seminar.get("url", "#")
 
-    st.subheader(seminar["title"])
+    is_bm = sid in st.session_state.bookmarked
 
-    st.write(
-        f"📂 {seminar['category']}"
-    )
-    st.write(
-        f"📅 {seminar['start_date']}"
+    st.markdown(
+        f"""
+        <div class="tt-card-fixed">
+
+            <div class="tt-card-img-wrap">
+                <img src="{image}" class="tt-card-img" />
+            </div>
+
+            <div class="tt-card-content">
+
+                <div class="tt-card-title">
+                    {title[:60]}
+                </div>
+
+                <div class="tt-card-meta">
+                    📂 {category[:20]} <br/>
+                    📅 {date}
+                </div>
+
+                <div class="tt-card-actions">
+                    <button class="btn">⭐</button>
+                    <a href="{url}" target="_blank">
+                        <button class="btn primary">Open</button>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     col1, col2, col3 = st.columns(3)
 
-    # ==========================
-    # BOOKMARK
-    # ==========================
-
     with col1:
-
-        if st.button(
-            "⭐ Bookmark",
-            key=f"{section}_bookmark_{seminar['id']}_{idx}"
-        ):
-
-            auth_post(
-                f"/interactions/track/",
-                data={
-                    "seminar_id": seminar["id"],
-                    "event_type": "bookmark"
-                }
-            )
-
-            st.success("Bookmarked")
-
-    # ==========================
-    # OPEN SEMINAR
-    # ==========================
-
-    with col2:
-
-            if st.button(
-                "👁 Open",
-                key=f"{section}_view_{seminar['id']}_{idx}"
-            ):
-
-                # TRACK VIEW
-                auth_post(
-                    "/interactions/track/",
-                    data={
-                        "seminar_id": seminar["id"],
-                        "event_type": "view"
-                    }
-                )
-
-                # OPEN URL
-                webbrowser.open_new_tab(
-                    seminar["url"]
-                )
-
-
-    with col3:
-
-        if st.button(
-            "📝 Register",
-            key=f"{section}_register_{seminar['id']}_{idx}"
-        ):
-
-            # TRACK REGISTER
-            auth_post(
-                "/interactions/track/",
-                data={
-                    "seminar_id": seminar["id"],
-                    "event_type": "register"
-                }
-            )
-
-            # REDIRECT
-            webbrowser.open_new_tab(
-                seminar["url"]
-            )
-
-    st.divider()
+        if st.button("⭐", key=f"{section}_bm_{sid}_{idx}"):
+            auth_post("/interactions/track/", {
+                "seminar_id": sid,
+                "event_type": "bookmark"
+            })
+            st.session_state.bookmarked.add(sid)
+            st.rerun()
